@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Attic — Back up your iCloud Photos to S3</title>
   <meta name="description" content="Attic reads your iCloud Photos library and backs up originals to S3-compatible storage. Runs on your Mac. Your photos, your bucket, your rules.">
-  <link rel="icon" href="attic-logo.png" type="image/png">
+  <link rel="icon" href="attic-logo-transparent.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -43,6 +43,22 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.65;
+      position: relative;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.3;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
     }
 
     ::selection {
@@ -79,8 +95,8 @@
     }
 
     .nav-logo {
-      width: 28px;
-      height: 28px;
+      width: auto;
+      height: 26px;
     }
 
     .nav-title {
@@ -133,8 +149,8 @@
     }
 
     .hero-logo {
-      width: 96px;
-      height: 96px;
+      width: auto;
+      height: 120px;
       margin-bottom: 2.5rem;
       opacity: 0;
       animation: fadeUp 0.8s ease 0.2s forwards;
@@ -307,8 +323,11 @@
     }
 
     .what-card-icon {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.6rem;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
       display: block;
     }
 
@@ -349,14 +368,15 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: var(--text);
-      color: var(--bg);
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--text);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--mono);
-      font-size: 0.85rem;
-      font-weight: 500;
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-style: italic;
       margin-bottom: 1rem;
       position: relative;
       z-index: 2;
@@ -369,12 +389,68 @@
       left: calc(50% + 24px);
       right: calc(-50% + 24px);
       height: 1px;
-      background: var(--border);
+      border-top: 1.5px dashed var(--border);
       z-index: 1;
     }
 
     .pipeline-step:last-child::after {
       display: none;
+    }
+
+    .how-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 3rem;
+    }
+
+    .ladder-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1.25rem 0.7rem 0.7rem;
+      flex-shrink: 0;
+      align-self: flex-end;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    .ladder-badge:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .ladder-badge svg {
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .ladder-badge:hover svg {
+      color: var(--accent);
+    }
+
+    .ladder-logo {
+      width: auto;
+      height: 40px;
+      border-radius: 6px;
+    }
+
+    .ladder-name {
+      display: block;
+      font-weight: 500;
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
+
+    .ladder-desc {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
     }
 
     .pipeline-step h3 {
@@ -432,7 +508,7 @@
 
     .req-item {
       padding: 1.5rem 0;
-      border-top: 2px solid var(--text);
+      border-top: 1.5px solid var(--text);
     }
 
     .req-item h3 {
@@ -652,9 +728,9 @@
     }
 
     .footer-logo {
-      width: 24px;
-      height: 24px;
-      opacity: 0.5;
+      width: auto;
+      height: 22px;
+      opacity: 0.4;
     }
 
     .footer-text {
@@ -734,6 +810,12 @@
         grid-template-columns: 1fr;
       }
 
+      .how-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
+
       .req-grid {
         grid-template-columns: 1fr;
       }
@@ -784,7 +866,7 @@
   <!-- NAV -->
   <nav id="nav">
     <div class="nav-left">
-      <img src="attic-logo.png" alt="Attic" class="nav-logo">
+      <img src="attic-logo-transparent.png" alt="Attic" class="nav-logo">
       <span class="nav-title">Attic</span>
     </div>
     <ul class="nav-links">
@@ -798,7 +880,7 @@
 
   <!-- HERO -->
   <section class="hero">
-    <img src="attic-logo.png" alt="Attic logo" class="hero-logo">
+    <img src="attic-logo-transparent.png" alt="Attic logo" class="hero-logo">
     <h1>Back up your iCloud Photos<br>to <em>your</em> storage</h1>
     <p class="hero-sub">
       Keep using Photos.app like you always do. Attic quietly backs up your originals to an S3 bucket you control. One-way, append-only. A safety net, not a second photo manager.
@@ -828,22 +910,22 @@
 
       <div class="what-grid reveal">
         <div class="what-card">
-          <span class="what-card-icon">&#9744;</span>
+          <span class="what-card-icon">i.</span>
           <h3>Originals only</h3>
           <p>Exports the original photo or video file from your library. No recompression, no quality loss. What you shot is what gets stored.</p>
         </div>
         <div class="what-card">
-          <span class="what-card-icon">&#10064;</span>
+          <span class="what-card-icon">ii.</span>
           <h3>Full metadata</h3>
           <p>Each asset is uploaded alongside a JSON file with EXIF data, dates, location, album membership, dimensions, and file hashes.</p>
         </div>
         <div class="what-card">
-          <span class="what-card-icon">&#8710;</span>
+          <span class="what-card-icon">iii.</span>
           <h3>Incremental</h3>
           <p>A local manifest tracks what's been backed up. Subsequent runs skip known assets and only upload what's changed or new.</p>
         </div>
         <div class="what-card">
-          <span class="what-card-icon">&#9745;</span>
+          <span class="what-card-icon">iv.</span>
           <h3>Verifiable</h3>
           <p>A built-in verify command checks S3 objects against the manifest. Run it with <code>--deep</code> to re-check SHA-256 hashes on every file.</p>
         </div>
@@ -854,12 +936,22 @@
   <!-- HOW IT WORKS -->
   <section id="how" class="how-section">
     <div class="container">
-      <div class="reveal">
-        <span class="section-label">Architecture</span>
-        <h2 class="section-title">How it works</h2>
-        <p class="section-prose">
-          Attic is a Deno/TypeScript CLI that orchestrates a four-step pipeline. A companion Swift tool called <a href="https://github.com/tijs/ladder" style="color: var(--accent);">Ladder</a> handles the actual export from Photos via PhotoKit.
-        </p>
+      <div class="reveal how-header">
+        <div>
+          <span class="section-label">Architecture</span>
+          <h2 class="section-title">How it works</h2>
+          <p class="section-prose">
+            Attic is a Deno/TypeScript CLI that orchestrates a four-step pipeline. A companion Swift tool called Ladder handles the actual export from Photos via PhotoKit.
+          </p>
+        </div>
+        <a href="https://github.com/tijs/ladder" class="ladder-badge">
+          <img src="ladder-logo.png" alt="Ladder logo" class="ladder-logo">
+          <div>
+            <span class="ladder-name">Ladder</span>
+            <span class="ladder-desc">Swift PhotoKit export helper</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3l5 5-5 5"/></svg>
+        </a>
       </div>
 
       <div class="pipeline reveal">
@@ -1117,7 +1209,7 @@
   <footer>
     <div class="footer-inner">
       <div class="footer-left">
-        <img src="attic-logo.png" alt="" class="footer-logo">
+        <img src="attic-logo-transparent.png" alt="" class="footer-logo">
         <span class="footer-text">Attic is open source.</span>
       </div>
       <ul class="footer-links">
