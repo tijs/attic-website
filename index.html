@@ -4,7 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Attic — Back up your iCloud Photos to S3</title>
-  <meta name="description" content="Attic reads your iCloud Photos library and backs up originals to S3-compatible storage. Runs on your Mac. Your photos, your bucket, your rules.">
+  <meta name="description" content="Attic reads your iCloud Photos library and backs up originals and edited versions to S3-compatible storage. Runs on your Mac. Your photos, your bucket, your rules.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://attic.photos/">
+  <meta property="og:title" content="Attic — Back up your iCloud Photos to S3">
+  <meta property="og:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to an S3 bucket you control.">
+  <meta property="og:image" content="https://attic.photos/og-image.png">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Attic — Back up your iCloud Photos to S3">
+  <meta name="twitter:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to an S3 bucket you control.">
+  <meta name="twitter:image" content="https://attic.photos/og-image.png">
+
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -402,55 +416,6 @@
       justify-content: space-between;
       align-items: flex-end;
       gap: 3rem;
-    }
-
-    .ladder-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.7rem 1.25rem 0.7rem 0.7rem;
-      flex-shrink: 0;
-      align-self: flex-end;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      text-decoration: none;
-      color: var(--text);
-      transition: all 0.2s;
-    }
-
-    .ladder-badge:hover {
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    .ladder-badge svg {
-      color: var(--text-tertiary);
-      flex-shrink: 0;
-      transition: color 0.2s;
-    }
-
-    .ladder-badge:hover svg {
-      color: var(--accent);
-    }
-
-    .ladder-logo {
-      width: auto;
-      height: 40px;
-      border-radius: 6px;
-    }
-
-    .ladder-name {
-      display: block;
-      font-weight: 500;
-      font-size: 0.9rem;
-      line-height: 1.2;
-    }
-
-    .ladder-desc {
-      display: block;
-      font-size: 0.78rem;
-      color: var(--text-secondary);
     }
 
     .pipeline-step h3 {
@@ -883,7 +848,7 @@
     <img src="attic-logo-transparent.png" alt="Attic logo" class="hero-logo">
     <h1>Back up your iCloud Photos<br>to <em>your</em> storage</h1>
     <p class="hero-sub">
-      Keep using Photos.app like you always do. Attic quietly backs up your originals to an S3 bucket you control. One-way, append-only. A safety net, not a second photo manager.
+      Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to an S3 bucket you control. One-way, append-only. A safety net, not a second photo manager.
     </p>
     <div class="hero-cta">
       <a href="https://github.com/tijs/attic" class="btn-primary">
@@ -891,6 +856,9 @@
         View on GitHub
       </a>
       <a href="#how" class="btn-secondary">See how it works &darr;</a>
+    </div>
+    <div class="hero-install" style="margin-top: 1.5rem; opacity: 0; animation: fadeUp 0.8s ease 1s forwards;">
+      <code style="font-family: var(--mono); font-size: 0.85rem; background: var(--code-bg); padding: 0.5rem 1rem; border-radius: 6px; color: var(--text-secondary);">brew install tijs/tap/attic</code>
     </div>
     <div class="scroll-hint">
       <div class="scroll-line"></div>
@@ -904,15 +872,15 @@
         <span class="section-label">Overview</span>
         <h2 class="section-title">What Attic does</h2>
         <p class="section-prose">
-          Attic is a command-line tool that backs up your iCloud Photos library to S3-compatible object storage. It reads the Photos database directly, exports original files, and uploads them with full metadata. Incremental by default&hairsp;&mdash;&hairsp;it only uploads what's new.
+          Attic is a command-line tool that backs up your iCloud Photos library to S3-compatible object storage. It exports original and edited files via PhotoKit and uploads them with full metadata. Incremental by default&hairsp;&mdash;&hairsp;it only uploads what's new.
         </p>
       </div>
 
       <div class="what-grid reveal">
         <div class="what-card">
           <span class="what-card-icon">i.</span>
-          <h3>Originals only</h3>
-          <p>Exports the original photo or video file from your library. No recompression, no quality loss. What you shot is what gets stored.</p>
+          <h3>Originals &amp; edits</h3>
+          <p>Exports both the original and the edited version of your photos and videos. No recompression, no quality loss. What you shot&hairsp;&mdash;&hairsp;and what you made of it&hairsp;&mdash;&hairsp;gets stored.</p>
         </div>
         <div class="what-card">
           <span class="what-card-icon">ii.</span>
@@ -941,17 +909,9 @@
           <span class="section-label">Architecture</span>
           <h2 class="section-title">How it works</h2>
           <p class="section-prose">
-            Attic is a Deno/TypeScript CLI that orchestrates a four-step pipeline. A companion Swift tool called Ladder handles the actual export from Photos via PhotoKit.
+            Attic is a standalone macOS binary that orchestrates a four-step pipeline. It uses PhotoKit directly to export photos and videos from your library, then uploads them to your S3 bucket.
           </p>
         </div>
-        <a href="https://github.com/tijs/ladder" class="ladder-badge">
-          <img src="ladder-logo.png" alt="Ladder logo" class="ladder-logo">
-          <div>
-            <span class="ladder-name">Ladder</span>
-            <span class="ladder-desc">Swift PhotoKit export helper</span>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3l5 5-5 5"/></svg>
-        </a>
       </div>
 
       <div class="pipeline reveal">
@@ -973,7 +933,7 @@
           <span class="pipeline-num">3</span>
           <div>
             <h3>Export</h3>
-            <p>Sends pending UUIDs to Ladder, which uses PhotoKit to export original files to a staging directory.</p>
+            <p>Uses PhotoKit to export original and edited files to a staging directory.</p>
           </div>
         </div>
         <div class="pipeline-step">
@@ -992,7 +952,7 @@
         </div>
         <div class="pipeline-note">
           <h4>iCloud-only assets</h4>
-          <p>If a photo or video isn't downloaded locally, Ladder requests it from iCloud via PhotoKit. This means Attic can back up your entire library, not just what's on disk.</p>
+          <p>If a photo or video isn't downloaded locally, Attic requests it from iCloud via PhotoKit. This means it can back up your entire library, not just what's on disk.</p>
         </div>
       </div>
     </div>
@@ -1012,12 +972,12 @@
           <p>Attic uses Photos.sqlite and the macOS Keychain. It runs on any Mac with a Photos library&hairsp;&mdash;&hairsp;your daily driver or a dedicated machine.</p>
         </div>
         <div class="req-item">
-          <h3>Deno</h3>
-          <p>Version 2 or later. Attic is a Deno workspace with typed commands. Install it from <a href="https://deno.land" style="color: var(--accent)">deno.land</a> or via Homebrew.</p>
+          <h3>Homebrew</h3>
+          <p>Install Attic with <code>brew install tijs/tap/attic</code>. It's a standalone binary&hairsp;&mdash;&hairsp;no runtime dependencies.</p>
         </div>
         <div class="req-item">
           <h3>An S3 bucket</h3>
-          <p>Any S3-compatible provider works. Create a bucket, generate API keys, and run <code>deno task init</code> to configure.</p>
+          <p>Any S3-compatible provider works. Create a bucket, generate API keys, and run <code>attic init</code> to configure.</p>
         </div>
       </div>
     </div>
@@ -1081,7 +1041,7 @@
           <ul class="not-list">
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Back up original photos and videos to S3
+              Back up original and edited photos and videos to S3
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
@@ -1126,7 +1086,7 @@
             </li>
             <li>
               <span class="marker marker-no">&times;</span>
-              Back up edited versions (yet&hairsp;&mdash;&hairsp;planned)
+              Require any runtime dependencies
             </li>
             <li>
               <span class="marker marker-no">&times;</span>
@@ -1153,7 +1113,7 @@
         <span class="section-label">Usage</span>
         <h2 class="section-title">Commands</h2>
         <p class="section-prose">
-          Everything runs through <code>deno task</code>. Set up once, then it's just <code>backup</code> and occasionally <code>verify</code>.
+          Everything runs through the <code>attic</code> command. Set up once, then it's just <code>attic backup</code> and occasionally <code>attic verify</code>.
         </p>
       </div>
 
@@ -1196,10 +1156,10 @@
         <div class="mini-code">
           <span class="comment"># crontab -e</span><br>
           <span class="comment"># Run backup daily at 3am</span><br>
-          <span class="cmd">0 3 * * *</span> cd ~/attic && deno task backup<br>
+          <span class="cmd">0 3 * * *</span> attic backup<br>
           <br>
           <span class="comment"># Verify weekly on Sundays</span><br>
-          <span class="cmd">0 4 * * 0</span> cd ~/attic && deno task verify
+          <span class="cmd">0 4 * * 0</span> attic verify
         </div>
       </div>
     </div>
@@ -1214,7 +1174,6 @@
       </div>
       <ul class="footer-links">
         <li><a href="https://github.com/tijs/attic">GitHub</a></li>
-        <li><a href="https://github.com/tijs/ladder">Ladder</a></li>
         <li><a href="https://github.com/tijs/attic/blob/main/docs/architecture.md">Docs</a></li>
       </ul>
     </div>
