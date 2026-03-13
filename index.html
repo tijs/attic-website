@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attic — Back up your iCloud Photos to S3</title>
+  <meta name="description" content="Attic reads your iCloud Photos library and backs up originals to S3-compatible storage. Runs on your Mac. Your photos, your bucket, your rules.">
+  <link rel="icon" href="attic-logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F6F4F0;
+      --bg-warm: #EDEAE4;
+      --text: #1A1817;
+      --text-secondary: #6B6560;
+      --text-tertiary: #9B9590;
+      --accent: #8B5E3C;
+      --accent-light: #A6764F;
+      --border: #D8D4CE;
+      --code-bg: #E8E5DF;
+      --card-bg: #FDFCFA;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'DM Sans', -apple-system, sans-serif;
+      --mono: 'DM Mono', 'SF Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 17px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    /* --- NAV --- */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(246, 244, 240, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+
+    nav.scrolled {
+      border-bottom-color: var(--border);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .nav-logo {
+      width: 28px;
+      height: 28px;
+    }
+
+    .nav-title {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 450;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* --- HERO --- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(ellipse, rgba(139, 94, 60, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-logo {
+      width: 96px;
+      height: 96px;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      max-width: 680px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 480px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+
+    .hero-cta {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.8s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--text);
+      color: var(--bg);
+      text-decoration: none;
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.75rem 1.25rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 450;
+      transition: color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      color: var(--text);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.2s forwards;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 32px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      animation: scrollDown 2s ease infinite;
+    }
+
+    /* --- SECTIONS --- */
+    section {
+      padding: 6rem 2rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-prose {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.75;
+    }
+
+    /* --- WHAT IT DOES --- */
+    .what-section {
+      background: var(--bg);
+    }
+
+    .what-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .what-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      transition: border-color 0.3s;
+    }
+
+    .what-card:hover {
+      border-color: var(--accent);
+    }
+
+    .what-card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .what-card h3 {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+    }
+
+    .what-card p {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* --- HOW IT WORKS --- */
+    .how-section {
+      background: var(--bg-warm);
+    }
+
+    .pipeline {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      margin-top: 3rem;
+      position: relative;
+    }
+
+    .pipeline-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      padding: 0 1rem;
+    }
+
+    .pipeline-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--text);
+      color: var(--bg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pipeline-step::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: calc(50% + 24px);
+      right: calc(-50% + 24px);
+      height: 1px;
+      background: var(--border);
+      z-index: 1;
+    }
+
+    .pipeline-step:last-child::after {
+      display: none;
+    }
+
+    .pipeline-step h3 {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 400;
+      margin-bottom: 0.4rem;
+    }
+
+    .pipeline-step p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .pipeline-detail {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .pipeline-note {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+
+    .pipeline-note h4 {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    .pipeline-note p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* --- REQUIREMENTS --- */
+    .req-section {
+      background: var(--bg);
+    }
+
+    .req-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .req-item {
+      padding: 1.5rem 0;
+      border-top: 2px solid var(--text);
+    }
+
+    .req-item h3 {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 400;
+      margin-bottom: 0.4rem;
+    }
+
+    .req-item p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .req-item code {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    /* --- STORAGE --- */
+    .storage-section {
+      background: var(--bg-warm);
+    }
+
+    .provider-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+
+    .provider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    .provider:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .provider-flag {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .provider-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .provider-detail {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* --- NOT --- */
+    .not-section {
+      background: var(--bg);
+    }
+
+    .not-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    .not-col h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      font-weight: 400;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .not-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .not-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .not-list .marker {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      margin-top: 0.15rem;
+    }
+
+    .marker-yes {
+      background: #2D5A27;
+      color: white;
+    }
+
+    .marker-no {
+      background: var(--border);
+      color: var(--text-tertiary);
+    }
+
+    /* --- COMMANDS --- */
+    .commands-section {
+      background: var(--bg-warm);
+    }
+
+    .cmd-list {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .cmd-item {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      background: var(--card-bg);
+      padding: 1.25rem 1.5rem;
+      align-items: baseline;
+    }
+
+    .cmd-name {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .cmd-desc {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+
+    /* --- MAC MINI --- */
+    .mini-section {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .mini-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .mini-text .section-prose {
+      margin-top: 1rem;
+    }
+
+    .mini-code {
+      background: var(--text);
+      color: #E8E5DF;
+      border-radius: 12px;
+      padding: 2rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .mini-code .comment {
+      color: #7A7570;
+    }
+
+    .mini-code .cmd {
+      color: #C9A87C;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .footer-logo {
+      width: 24px;
+      height: 24px;
+      opacity: 0.5;
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    /* --- ANIMATIONS --- */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scrollDown {
+      0% { top: -100%; }
+      50% { top: 100%; }
+      100% { top: 100%; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+      nav {
+        padding: 0.75rem 1.25rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      section {
+        padding: 4rem 1.25rem;
+      }
+
+      .what-grid,
+      .not-grid,
+      .pipeline-detail,
+      .mini-content {
+        grid-template-columns: 1fr;
+      }
+
+      .req-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pipeline {
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .pipeline-step {
+        text-align: left;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 0;
+      }
+
+      .pipeline-step::after {
+        display: none;
+      }
+
+      .pipeline-step .pipeline-num {
+        flex-shrink: 0;
+      }
+
+      .cmd-item {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .mini-content {
+        gap: 2rem;
+      }
+
+      .hero-cta {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-left">
+      <img src="attic-logo.png" alt="Attic" class="nav-logo">
+      <span class="nav-title">Attic</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#what">What it does</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#requirements">Requirements</a></li>
+      <li><a href="#storage">Storage</a></li>
+      <li><a href="https://github.com/tijs/attic">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img src="attic-logo.png" alt="Attic logo" class="hero-logo">
+    <h1>Back up your iCloud Photos<br>to <em>your</em> storage</h1>
+    <p class="hero-sub">
+      Keep using Photos.app like you always do. Attic quietly backs up your originals to an S3 bucket you control. One-way, append-only. A safety net, not a second photo manager.
+    </p>
+    <div class="hero-cta">
+      <a href="https://github.com/tijs/attic" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+      <a href="#how" class="btn-secondary">See how it works &darr;</a>
+    </div>
+    <div class="scroll-hint">
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- WHAT IT DOES -->
+  <section id="what" class="what-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Overview</span>
+        <h2 class="section-title">What Attic does</h2>
+        <p class="section-prose">
+          Attic is a command-line tool that backs up your iCloud Photos library to S3-compatible object storage. It reads the Photos database directly, exports original files, and uploads them with full metadata. Incremental by default&hairsp;&mdash;&hairsp;it only uploads what's new.
+        </p>
+      </div>
+
+      <div class="what-grid reveal">
+        <div class="what-card">
+          <span class="what-card-icon">&#9744;</span>
+          <h3>Originals only</h3>
+          <p>Exports the original photo or video file from your library. No recompression, no quality loss. What you shot is what gets stored.</p>
+        </div>
+        <div class="what-card">
+          <span class="what-card-icon">&#10064;</span>
+          <h3>Full metadata</h3>
+          <p>Each asset is uploaded alongside a JSON file with EXIF data, dates, location, album membership, dimensions, and file hashes.</p>
+        </div>
+        <div class="what-card">
+          <span class="what-card-icon">&#8710;</span>
+          <h3>Incremental</h3>
+          <p>A local manifest tracks what's been backed up. Subsequent runs skip known assets and only upload what's changed or new.</p>
+        </div>
+        <div class="what-card">
+          <span class="what-card-icon">&#9745;</span>
+          <h3>Verifiable</h3>
+          <p>A built-in verify command checks S3 objects against the manifest. Run it with <code>--deep</code> to re-check SHA-256 hashes on every file.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="how-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Architecture</span>
+        <h2 class="section-title">How it works</h2>
+        <p class="section-prose">
+          Attic is a Deno/TypeScript CLI that orchestrates a four-step pipeline. A companion Swift tool called <a href="https://github.com/tijs/ladder" style="color: var(--accent);">Ladder</a> handles the actual export from Photos via PhotoKit.
+        </p>
+      </div>
+
+      <div class="pipeline reveal">
+        <div class="pipeline-step">
+          <span class="pipeline-num">1</span>
+          <div>
+            <h3>Scan</h3>
+            <p>Reads Photos.sqlite to discover all assets, their types, sizes, and iCloud status.</p>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-num">2</span>
+          <div>
+            <h3>Diff</h3>
+            <p>Compares the database against the local manifest to find assets that haven't been backed up yet.</p>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-num">3</span>
+          <div>
+            <h3>Export</h3>
+            <p>Sends pending UUIDs to Ladder, which uses PhotoKit to export original files to a staging directory.</p>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-num">4</span>
+          <div>
+            <h3>Upload</h3>
+            <p>Uploads each original + metadata JSON to your S3 bucket, then updates the manifest.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-detail reveal">
+        <div class="pipeline-note">
+          <h4>Credentials</h4>
+          <p>S3 access keys are stored in the macOS Keychain. Never in config files, never in environment variables. The config file only holds the endpoint, region, and bucket name.</p>
+        </div>
+        <div class="pipeline-note">
+          <h4>iCloud-only assets</h4>
+          <p>If a photo or video isn't downloaded locally, Ladder requests it from iCloud via PhotoKit. This means Attic can back up your entire library, not just what's on disk.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS -->
+  <section id="requirements" class="req-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Setup</span>
+        <h2 class="section-title">What you need</h2>
+      </div>
+
+      <div class="req-grid reveal">
+        <div class="req-item">
+          <h3>A Mac</h3>
+          <p>Attic uses Photos.sqlite and the macOS Keychain. It runs on any Mac with a Photos library&hairsp;&mdash;&hairsp;your daily driver or a dedicated machine.</p>
+        </div>
+        <div class="req-item">
+          <h3>Deno</h3>
+          <p>Version 2 or later. Attic is a Deno workspace with typed commands. Install it from <a href="https://deno.land" style="color: var(--accent)">deno.land</a> or via Homebrew.</p>
+        </div>
+        <div class="req-item">
+          <h3>An S3 bucket</h3>
+          <p>Any S3-compatible provider works. Create a bucket, generate API keys, and run <code>deno task init</code> to configure.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORAGE PROVIDERS -->
+  <section id="storage" class="storage-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Storage</span>
+        <h2 class="section-title">Pick your provider</h2>
+        <p class="section-prose">
+          Any S3-compatible storage works. If you want your backups in the EU, these are solid options. If you already have AWS, that works too.
+        </p>
+      </div>
+
+      <div class="provider-list reveal">
+        <a href="https://www.scaleway.com/en/object-storage/" class="provider">
+          <span class="provider-flag">&#127467;&#127479;</span>
+          <div>
+            <div class="provider-name">Scaleway</div>
+            <div class="provider-detail">Paris, Amsterdam &middot; EU-based</div>
+          </div>
+        </a>
+        <a href="https://www.hetzner.com/storage/object-storage" class="provider">
+          <span class="provider-flag">&#127465;&#127466;</span>
+          <div>
+            <div class="provider-name">Hetzner</div>
+            <div class="provider-detail">Falkenstein, Helsinki &middot; EU-based</div>
+          </div>
+        </a>
+        <a href="https://www.ovhcloud.com/en/public-cloud/object-storage/" class="provider">
+          <span class="provider-flag">&#127467;&#127479;</span>
+          <div>
+            <div class="provider-name">OVHcloud</div>
+            <div class="provider-detail">Multiple EU regions</div>
+          </div>
+        </a>
+        <a href="https://aws.amazon.com/s3/" class="provider">
+          <span class="provider-flag">&#127482;&#127480;</span>
+          <div>
+            <div class="provider-name">Amazon S3</div>
+            <div class="provider-detail">Global &middot; eu-west available</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT IT DOES / DOESN'T -->
+  <section class="not-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Scope</span>
+        <h2 class="section-title">Honest expectations</h2>
+      </div>
+
+      <div class="not-grid reveal">
+        <div class="not-col">
+          <h3>It does</h3>
+          <ul class="not-list">
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Back up original photos and videos to S3
+            </li>
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Preserve full metadata (EXIF, location, albums, dates)
+            </li>
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Run incrementally&hairsp;&mdash;&hairsp;only upload what's new
+            </li>
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Verify backups with checksum validation
+            </li>
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Store credentials in macOS Keychain
+            </li>
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Fetch iCloud-only assets via PhotoKit
+            </li>
+            <li>
+              <span class="marker marker-yes">&#10003;</span>
+              Run unattended on a spare Mac
+            </li>
+          </ul>
+        </div>
+        <div class="not-col">
+          <h3>It doesn't</h3>
+          <ul class="not-list">
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Replace iCloud Photos&hairsp;&mdash;&hairsp;it's a backup, not a sync
+            </li>
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Have a GUI&hairsp;&mdash;&hairsp;it's a command-line tool
+            </li>
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Run on Windows or Linux
+            </li>
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Back up edited versions (yet&hairsp;&mdash;&hairsp;planned)
+            </li>
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Restore photos into your library
+            </li>
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Browse or view your backed-up photos
+            </li>
+            <li>
+              <span class="marker marker-no">&times;</span>
+              Manage your storage bucket for you
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMANDS -->
+  <section class="commands-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Usage</span>
+        <h2 class="section-title">Commands</h2>
+        <p class="section-prose">
+          Everything runs through <code>deno task</code>. Set up once, then it's just <code>backup</code> and occasionally <code>verify</code>.
+        </p>
+      </div>
+
+      <div class="cmd-list reveal">
+        <div class="cmd-item">
+          <span class="cmd-name">init</span>
+          <span class="cmd-desc">Interactive setup. Configures S3 connection and stores credentials in Keychain.</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-name">scan</span>
+          <span class="cmd-desc">Read the Photos library and print stats: asset counts, sizes, types, local vs iCloud-only.</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-name">status</span>
+          <span class="cmd-desc">Compare library against manifest. Shows how many assets are backed up vs pending.</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-name">backup</span>
+          <span class="cmd-desc">Export pending assets and upload originals + metadata to S3. Supports --dry-run, --limit, and --type filters.</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-name">verify</span>
+          <span class="cmd-desc">Check S3 objects against the manifest. Use --deep to re-verify SHA-256 checksums.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAC MINI -->
+  <section class="mini-section">
+    <div class="container">
+      <div class="mini-content reveal">
+        <div class="mini-text">
+          <span class="section-label">Unattended</span>
+          <h2 class="section-title">Put that Mac mini to work</h2>
+          <p class="section-prose">
+            Got a Mac mini sitting around after your OpenClaw experiments? Sign into iCloud Photos on it and let Attic run daily backups. Scheduled backups via launchd are coming&hairsp;&mdash;&hairsp;for now a simple cron job does the trick.
+          </p>
+        </div>
+        <div class="mini-code">
+          <span class="comment"># crontab -e</span><br>
+          <span class="comment"># Run backup daily at 3am</span><br>
+          <span class="cmd">0 3 * * *</span> cd ~/attic && deno task backup<br>
+          <br>
+          <span class="comment"># Verify weekly on Sundays</span><br>
+          <span class="cmd">0 4 * * 0</span> cd ~/attic && deno task verify
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <img src="attic-logo.png" alt="" class="footer-logo">
+        <span class="footer-text">Attic is open source.</span>
+      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/tijs/attic">GitHub</a></li>
+        <li><a href="https://github.com/tijs/ladder">Ladder</a></li>
+        <li><a href="https://github.com/tijs/attic/blob/main/docs/architecture.md">Docs</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    // Nav scroll state
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
