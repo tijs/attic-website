@@ -909,7 +909,7 @@
           <span class="section-label">Architecture</span>
           <h2 class="section-title">How it works</h2>
           <p class="section-prose">
-            Attic is a standalone macOS binary that orchestrates a four-step pipeline. It uses PhotoKit directly to export photos and videos from your library, then uploads them to your S3 bucket.
+            Attic is a macOS command-line tool that orchestrates a four-step pipeline. It uses <a href="https://github.com/tijs/ladder" style="color: var(--accent)">ladder</a>, a companion binary, to export photos and videos from your library via PhotoKit, then uploads them to your S3 bucket.
           </p>
         </div>
       </div>
@@ -933,7 +933,7 @@
           <span class="pipeline-num">3</span>
           <div>
             <h3>Export</h3>
-            <p>Uses PhotoKit to export original and edited files to a staging directory.</p>
+            <p>Uses ladder to export original and edited files via PhotoKit to a staging directory.</p>
           </div>
         </div>
         <div class="pipeline-step">
@@ -952,7 +952,7 @@
         </div>
         <div class="pipeline-note">
           <h4>iCloud-only assets</h4>
-          <p>If a photo or video isn't downloaded locally, Attic requests it from iCloud via PhotoKit. This means it can back up your entire library, not just what's on disk.</p>
+          <p>If a photo or video isn't downloaded locally, ladder requests it from iCloud via PhotoKit. This means Attic can back up your entire library, not just what's on disk.</p>
         </div>
       </div>
     </div>
@@ -973,7 +973,7 @@
         </div>
         <div class="req-item">
           <h3>Homebrew</h3>
-          <p>Install Attic with <code>brew install tijs/tap/attic</code>. It's a standalone binary&hairsp;&mdash;&hairsp;no runtime dependencies.</p>
+          <p>Install Attic with <code>brew install tijs/tap/attic</code>. This installs both attic and its companion <a href="https://github.com/tijs/ladder" style="color: var(--accent)">ladder</a>&hairsp;&mdash;&hairsp;no other dependencies needed.</p>
         </div>
         <div class="req-item">
           <h3>An S3 bucket</h3>
