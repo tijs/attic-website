@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attic — Back up your iCloud Photos to S3</title>
-  <meta name="description" content="Attic reads your iCloud Photos library and backs up originals and edited versions to S3-compatible storage. Runs on your Mac. Your photos, your bucket, your rules.">
+  <title>Attic — Back up your iCloud Photos to your own storage</title>
+  <meta name="description" content="Attic reads your iCloud Photos library and backs up originals and edited versions to cloud storage you control. Pick any provider — including EU-based ones. Your photos, your bucket, your rules.">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://attic.photos/">
-  <meta property="og:title" content="Attic — Back up your iCloud Photos to S3">
-  <meta property="og:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to an S3 bucket you control.">
+  <meta property="og:title" content="Attic — Back up your iCloud Photos to your own storage">
+  <meta property="og:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to cloud storage you control — including EU providers.">
   <meta property="og:image" content="https://attic.photos/og-image.png">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Attic — Back up your iCloud Photos to S3">
-  <meta name="twitter:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to an S3 bucket you control.">
+  <meta name="twitter:title" content="Attic — Back up your iCloud Photos to your own storage">
+  <meta name="twitter:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to cloud storage you control — including EU providers.">
   <meta name="twitter:image" content="https://attic.photos/og-image.png">
 
   <link rel="icon" href="favicon.png" type="image/png">
@@ -848,7 +848,7 @@
     <img src="attic-logo-transparent.png" alt="Attic logo" class="hero-logo">
     <h1>Back up your iCloud Photos<br>to <em>your</em> storage</h1>
     <p class="hero-sub">
-      Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to an S3 bucket you control. One-way, append-only. A safety net, not a second photo manager.
+      Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to cloud storage you control&hairsp;&mdash;&hairsp;on any provider, in any region. One-way, append-only. A safety net, not a second photo manager.
     </p>
     <div class="hero-cta">
       <a href="https://github.com/tijs/attic" class="btn-primary">
@@ -872,7 +872,7 @@
         <span class="section-label">Overview</span>
         <h2 class="section-title">What Attic does</h2>
         <p class="section-prose">
-          Attic is a command-line tool that backs up your iCloud Photos library to S3-compatible object storage. It exports original and edited files via PhotoKit and uploads them with full metadata. Incremental by default&hairsp;&mdash;&hairsp;it only uploads what's new.
+          Attic is a command-line tool that backs up your iCloud Photos library to object storage you own. It works with any provider that speaks the S3 protocol&hairsp;&mdash;&hairsp;which most do, from small European hosts to the big clouds. It exports original and edited files via PhotoKit and uploads them with full metadata. Incremental by default&hairsp;&mdash;&hairsp;it only uploads what's new.
         </p>
       </div>
 
@@ -895,7 +895,7 @@
         <div class="what-card">
           <span class="what-card-icon">iv.</span>
           <h3>Verifiable</h3>
-          <p>A built-in verify command checks S3 objects against the manifest. Run it with <code>--deep</code> to re-check SHA-256 hashes on every file.</p>
+          <p>A built-in verify command checks remote objects against the manifest. Run it with <code>--deep</code> to re-check SHA-256 hashes on every file.</p>
         </div>
       </div>
     </div>
@@ -909,7 +909,7 @@
           <span class="section-label">Architecture</span>
           <h2 class="section-title">How it works</h2>
           <p class="section-prose">
-            Attic is a macOS command-line tool that orchestrates a four-step pipeline. It uses <a href="https://github.com/tijs/ladder" style="color: var(--accent)">ladder</a>, a companion binary, to export photos and videos from your library via PhotoKit, then uploads them to your S3 bucket.
+            Attic is a standalone macOS binary that runs a four-step pipeline. It reads your Photos library directly via PhotoKit, exports originals and edits to a staging area, then uploads everything to the storage bucket you configured.
           </p>
         </div>
       </div>
@@ -940,7 +940,7 @@
           <span class="pipeline-num">4</span>
           <div>
             <h3>Upload</h3>
-            <p>Uploads each original + metadata JSON to your S3 bucket, then updates the manifest.</p>
+            <p>Uploads each original + metadata JSON to your storage bucket, then updates the manifest.</p>
           </div>
         </div>
       </div>
@@ -948,7 +948,7 @@
       <div class="pipeline-detail reveal">
         <div class="pipeline-note">
           <h4>Credentials</h4>
-          <p>S3 access keys are stored in the macOS Keychain. Never in config files, never in environment variables. The config file only holds the endpoint, region, and bucket name.</p>
+          <p>Storage access keys are stored in the macOS Keychain. Never in config files, never in environment variables. The config file only holds the endpoint, region, and bucket name.</p>
         </div>
         <div class="pipeline-note">
           <h4>iCloud-only assets</h4>
@@ -976,8 +976,8 @@
           <p>Install Attic with <code>brew install tijs/tap/attic</code>. This installs both attic and its companion <a href="https://github.com/tijs/ladder" style="color: var(--accent)">ladder</a>&hairsp;&mdash;&hairsp;no other dependencies needed.</p>
         </div>
         <div class="req-item">
-          <h3>An S3 bucket</h3>
-          <p>Any S3-compatible provider works. Create a bucket, generate API keys, and run <code>attic init</code> to configure.</p>
+          <h3>A storage bucket</h3>
+          <p>Any provider that supports the S3 protocol&hairsp;&mdash;&hairsp;that's most of them, not just Amazon. Create a bucket, generate API keys, and run <code>attic init</code> to configure.</p>
         </div>
       </div>
     </div>
@@ -988,9 +988,9 @@
     <div class="container">
       <div class="reveal">
         <span class="section-label">Storage</span>
-        <h2 class="section-title">Pick your provider</h2>
+        <h2 class="section-title">Your storage, your region</h2>
         <p class="section-prose">
-          Any S3-compatible storage works. If you want your backups in the EU, these are solid options. If you already have AWS, that works too.
+          Attic works with any provider that speaks the S3 protocol&hairsp;&mdash;&hairsp;an industry standard supported far beyond Amazon. Want your photo backups in the EU? These providers keep your data on European soil.
         </p>
       </div>
 
@@ -1027,14 +1027,14 @@
           <span class="provider-flag">&#127482;&#127480;</span>
           <div>
             <div class="provider-name">Amazon S3</div>
-            <div class="provider-detail">Global &middot; eu-west available</div>
+            <div class="provider-detail">Global &middot; EU regions available</div>
           </div>
         </a>
         <a href="https://european-alternatives.eu/alternative-to/amazon-s3" class="provider">
           <span class="provider-flag">&rarr;</span>
           <div>
             <div class="provider-name">More options</div>
-            <div class="provider-detail">European alternatives to S3</div>
+            <div class="provider-detail">Browse more European providers</div>
           </div>
         </a>
       </div>
@@ -1055,7 +1055,7 @@
           <ul class="not-list">
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Back up original and edited photos and videos to S3
+              Back up original and edited photos and videos to your storage
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
@@ -1134,7 +1134,7 @@
       <div class="cmd-list reveal">
         <div class="cmd-item">
           <span class="cmd-name">init</span>
-          <span class="cmd-desc">Interactive setup. Configures S3 connection and stores credentials in Keychain.</span>
+          <span class="cmd-desc">Interactive setup. Configures your storage connection and stores credentials in Keychain.</span>
         </div>
         <div class="cmd-item">
           <span class="cmd-name">scan</span>
@@ -1146,11 +1146,11 @@
         </div>
         <div class="cmd-item">
           <span class="cmd-name">backup</span>
-          <span class="cmd-desc">Export pending assets and upload originals + metadata to S3. Supports --dry-run, --limit, and --type filters.</span>
+          <span class="cmd-desc">Export pending assets and upload originals + metadata to your bucket. Supports --dry-run, --limit, and --type filters.</span>
         </div>
         <div class="cmd-item">
           <span class="cmd-name">verify</span>
-          <span class="cmd-desc">Check S3 objects against the manifest. Use --deep to re-verify SHA-256 checksums.</span>
+          <span class="cmd-desc">Check remote objects against the manifest. Use --deep to re-verify SHA-256 checksums.</span>
         </div>
       </div>
     </div>
