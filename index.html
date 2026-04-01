@@ -358,6 +358,103 @@
       line-height: 1.65;
     }
 
+    /* --- DEMO VIDEO --- */
+    .demo-section {
+      background: var(--bg-warm);
+      padding: 5rem 2rem;
+    }
+
+    .demo-window {
+      max-width: 800px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #1A1817;
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.04),
+        0 8px 24px rgba(0,0,0,0.08),
+        0 24px 48px rgba(0,0,0,0.06);
+    }
+
+    .demo-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      background: #252220;
+    }
+
+    .demo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3A3632;
+    }
+
+    .demo-titlebar-text {
+      flex: 1;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: #6B6560;
+      letter-spacing: 0.02em;
+    }
+
+    .demo-video-wrap {
+      position: relative;
+      line-height: 0;
+    }
+
+    .demo-video-wrap video {
+      width: 100%;
+      display: block;
+      cursor: pointer;
+    }
+
+    .demo-play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(26, 24, 23, 0.35);
+      transition: opacity 0.3s ease;
+      cursor: pointer;
+    }
+
+    .demo-play-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .demo-play-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(246, 244, 240, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+
+    .demo-play-overlay:hover .demo-play-btn {
+      transform: scale(1.08);
+    }
+
+    .demo-play-btn svg {
+      margin-left: 3px;
+    }
+
+    .demo-caption {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      font-style: italic;
+      font-family: var(--serif);
+    }
+
     /* --- HOW IT WORKS --- */
     .how-section {
       background: var(--bg-warm);
@@ -765,9 +862,64 @@
       }
 
       section {
-        padding: 4rem 1.25rem;
+        padding: 3.5rem 1.25rem;
       }
 
+      /* Hero */
+      .hero {
+        min-height: auto;
+        padding: 5rem 1.25rem 3rem;
+      }
+
+      .hero-logo {
+        height: 80px;
+        margin-bottom: 1.75rem;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.8rem, 7vw, 2.4rem);
+      }
+
+      .hero-sub {
+        font-size: 1rem;
+        margin-top: 1.25rem;
+      }
+
+      .hero-cta {
+        flex-direction: column;
+        margin-top: 2rem;
+      }
+
+      .hero-install code {
+        font-size: 0.78rem !important;
+        word-break: break-all;
+      }
+
+      .scroll-hint {
+        display: none;
+      }
+
+      /* Demo */
+      .demo-section {
+        padding: 3rem 1.25rem;
+      }
+
+      .demo-window {
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      }
+
+      .demo-play-btn {
+        width: 48px;
+        height: 48px;
+      }
+
+      .demo-caption {
+        font-size: 0.8rem;
+        margin-top: 1rem;
+      }
+
+      /* Grids */
       .what-grid,
       .not-grid,
       .pipeline-detail,
@@ -775,19 +927,26 @@
         grid-template-columns: 1fr;
       }
 
+      .what-grid {
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .what-card {
+        padding: 1.5rem;
+      }
+
+      /* How it works */
       .how-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1.5rem;
       }
 
-      .req-grid {
-        grid-template-columns: 1fr;
-      }
-
       .pipeline {
         flex-direction: column;
-        gap: 2rem;
+        gap: 1.5rem;
+        margin-top: 2rem;
       }
 
       .pipeline-step {
@@ -806,22 +965,74 @@
         flex-shrink: 0;
       }
 
+      .pipeline-detail {
+        margin-top: 2rem;
+        gap: 1rem;
+      }
+
+      /* Requirements */
+      .req-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin-top: 2rem;
+      }
+
+      .req-item {
+        padding: 1.25rem 0;
+      }
+
+      /* Storage providers */
+      .provider-list {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-top: 2rem;
+      }
+
+      .provider {
+        padding: 1rem 1.25rem;
+      }
+
+      /* Scope */
+      .not-grid {
+        gap: 2.5rem;
+        margin-top: 2rem;
+      }
+
+      /* Commands */
       .cmd-item {
         grid-template-columns: 1fr;
         gap: 0.25rem;
+        padding: 1rem 1.25rem;
       }
 
-      .footer-inner {
-        flex-direction: column;
-        gap: 1.5rem;
+      .cmd-name {
+        font-weight: 500;
       }
 
+      /* Mac mini */
       .mini-content {
         gap: 2rem;
       }
 
-      .hero-cta {
+      .mini-code {
+        font-size: 0.78rem;
+        padding: 1.5rem;
+        border-radius: 10px;
+      }
+
+      /* Section typography */
+      .section-title {
+        font-size: clamp(1.5rem, 6vw, 2rem);
+      }
+
+      .section-prose {
+        font-size: 1rem;
+      }
+
+      /* Footer */
+      .footer-inner {
         flex-direction: column;
+        gap: 1.5rem;
       }
     }
   </style>
@@ -890,13 +1101,42 @@
         <div class="what-card">
           <span class="what-card-icon">iii.</span>
           <h3>Incremental</h3>
-          <p>A local manifest tracks what's been backed up. Subsequent runs skip known assets and only upload what's changed or new.</p>
+          <p>A manifest stored in your bucket tracks what's been backed up. Subsequent runs skip known assets and only upload what's changed or new.</p>
         </div>
         <div class="what-card">
           <span class="what-card-icon">iv.</span>
           <h3>Verifiable</h3>
           <p>A built-in verify command checks remote objects against the manifest, re-verifying SHA-256 hashes on every file.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section class="demo-section">
+    <div class="container">
+      <div class="reveal">
+        <div class="demo-window">
+          <div class="demo-titlebar">
+            <span class="demo-dot"></span>
+            <span class="demo-dot"></span>
+            <span class="demo-dot"></span>
+            <span class="demo-titlebar-text">attic backup</span>
+          </div>
+          <div class="demo-video-wrap">
+            <video id="demo-video" preload="metadata" muted playsinline>
+              <source src="attic-demo.mp4" type="video/mp4">
+            </video>
+            <div class="demo-play-overlay" id="demo-overlay">
+              <div class="demo-play-btn">
+                <svg width="20" height="22" viewBox="0 0 20 22" fill="none">
+                  <path d="M2 1.5L18 11L2 20.5V1.5Z" fill="#1A1817" stroke="#1A1817" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="demo-caption">18 seconds of a real backup run</p>
       </div>
     </div>
   </section>
@@ -926,7 +1166,7 @@
           <span class="pipeline-num">2</span>
           <div>
             <h3>Diff</h3>
-            <p>Compares the database against the local manifest to find assets that haven't been backed up yet.</p>
+            <p>Compares the database against the manifest to find assets that haven't been backed up yet.</p>
           </div>
         </div>
         <div class="pipeline-step">
@@ -1215,6 +1455,24 @@
     });
 
     reveals.forEach(el => observer.observe(el));
+
+    // Demo video play/pause
+    const demoVideo = document.getElementById('demo-video');
+    const demoOverlay = document.getElementById('demo-overlay');
+    function toggleDemo() {
+      if (demoVideo.paused) {
+        demoVideo.play();
+        demoOverlay.classList.add('hidden');
+      } else {
+        demoVideo.pause();
+        demoOverlay.classList.remove('hidden');
+      }
+    }
+    demoOverlay.addEventListener('click', toggleDemo);
+    demoVideo.addEventListener('click', toggleDemo);
+    demoVideo.addEventListener('ended', () => {
+      demoOverlay.classList.remove('hidden');
+    });
   </script>
   <!-- Counter.dev analytics -->
   <script>
