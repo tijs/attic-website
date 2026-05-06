@@ -1408,12 +1408,12 @@
           </p>
         </div>
         <div class="mini-code">
-          <span class="comment"># crontab -e</span><br>
-          <span class="comment"># Run backup daily at 3am</span><br>
-          <span class="cmd">0 3 * * *</span> attic backup<br>
+          <span class="comment"># ~/Library/LaunchAgents/</span><br>
+          <span class="comment"># Daily 03:00 — backup</span><br>
+          <span class="cmd">attic backup</span> --limit 2000<br>
           <br>
-          <span class="comment"># Verify weekly on Sundays</span><br>
-          <span class="cmd">0 4 * * 0</span> attic verify
+          <span class="comment"># Sundays 04:00 — verify</span><br>
+          <span class="cmd">attic verify</span>
         </div>
       </div>
     </div>
