@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Attic — Back up your iCloud Photos to your own storage</title>
-  <meta name="description" content="Attic reads your iCloud Photos library and backs up originals and edited versions to cloud storage you control. Pick any provider — including EU-based ones. Your photos, your bucket, your rules.">
+  <meta name="description" content="Back up your iCloud Photos originals to an external drive or S3-compatible cloud storage. Recover verified files with resumable restore and optional Photos import.">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://attic.photos/">
   <meta property="og:title" content="Attic — Back up your iCloud Photos to your own storage">
-  <meta property="og:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to cloud storage you control — including EU providers.">
+  <meta property="og:description" content="Keep using Photos.app. Back up originals to a local drive or S3-compatible cloud storage, then recover verified files when you need them.">
   <meta property="og:image" content="https://attic.photos/og-image.png">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Attic — Back up your iCloud Photos to your own storage">
-  <meta name="twitter:description" content="Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to cloud storage you control — including EU providers.">
+  <meta name="twitter:description" content="Keep using Photos.app. Back up originals to a local drive or S3-compatible cloud storage, then recover verified files when you need them.">
   <meta name="twitter:image" content="https://attic.photos/og-image.png">
 
   <link rel="icon" href="favicon.png" type="image/png">
@@ -733,6 +733,30 @@
       color: var(--text-secondary);
     }
 
+    .setup-example {
+      margin-top: 2.5rem;
+    }
+
+    .setup-example .mini-code {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      min-width: 0;
+    }
+
+    .mini-code code {
+      font: inherit;
+    }
+
+    .section-prose code,
+    .pipeline-note code {
+      white-space: nowrap;
+    }
+
+    .guide-link {
+      color: var(--accent);
+    }
+
     /* --- MAC MINI --- */
     .mini-section {
       background: var(--bg);
@@ -1050,6 +1074,7 @@
       <li><a href="#how">How it works</a></li>
       <li><a href="#requirements">Requirements</a></li>
       <li><a href="#storage">Storage</a></li>
+      <li><a href="#restore">Restore</a></li>
       <li><a href="https://github.com/tijs/attic">GitHub</a></li>
     </ul>
   </nav>
@@ -1059,7 +1084,7 @@
     <img src="attic-logo-transparent.png" alt="Attic logo" class="hero-logo">
     <h1>Back up your iCloud Photos<br>to <em>your</em> storage</h1>
     <p class="hero-sub">
-      Keep using Photos.app like you always do. Attic quietly backs up your originals and edits to cloud storage you control&hairsp;&mdash;&hairsp;on any provider, in any region. One-way, append-only. A safety net, not a second photo manager.
+      Keep using Photos.app like you always do. Attic backs up your originals to an external drive or S3-compatible cloud storage you control. Recover verified files when you need them. A safety net, not a second photo manager.
     </p>
     <div class="hero-cta">
       <a href="https://github.com/tijs/attic" class="btn-primary">
@@ -1083,30 +1108,30 @@
         <span class="section-label">Overview</span>
         <h2 class="section-title">What Attic does</h2>
         <p class="section-prose">
-          Attic is a command-line tool that backs up your iCloud Photos library to object storage you own. It works with any provider that speaks the S3 protocol&hairsp;&mdash;&hairsp;which most do, from small European hosts to the big clouds. It exports original and edited files via PhotoKit and uploads them with full metadata. Incremental by default&hairsp;&mdash;&hairsp;it only uploads what's new.
+          Attic is a macOS command-line tool that backs up your iCloud Photos originals and metadata to storage you own. Choose a local APFS or HFS+ drive, or an S3-compatible provider. Backups are incremental, and each destination has its own manifest. The restore command recovers files from either kind of backup, even without the original Mac or Photos library.
         </p>
       </div>
 
       <div class="what-grid reveal">
         <div class="what-card">
           <span class="what-card-icon">i.</span>
-          <h3>Originals &amp; edits</h3>
-          <p>Exports both the original and the edited version of your photos and videos. No recompression, no quality loss. What you shot&hairsp;&mdash;&hairsp;and what you made of it&hairsp;&mdash;&hairsp;gets stored.</p>
+          <h3>Your original files</h3>
+          <p>Exports original photo and video files without recompression. Metadata sidecars retain available dates, locations, album references, dimensions, and file hashes.</p>
         </div>
         <div class="what-card">
           <span class="what-card-icon">ii.</span>
-          <h3>Full metadata</h3>
-          <p>Each asset is uploaded alongside a JSON file with EXIF data, dates, location, album membership, dimensions, and file hashes.</p>
+          <h3>Local or cloud</h3>
+          <p>Back up to a local or external APFS/HFS+ drive, or an S3-compatible bucket. Named profiles keep destinations separate; each backup run selects one.</p>
         </div>
         <div class="what-card">
           <span class="what-card-icon">iii.</span>
           <h3>Incremental</h3>
-          <p>A manifest stored in your bucket tracks what's been backed up. Subsequent runs skip known assets and only upload what's changed or new.</p>
+          <p>A manifest at your destination tracks what has been backed up. Subsequent runs skip known assets and copy what is new.</p>
         </div>
         <div class="what-card">
           <span class="what-card-icon">iv.</span>
           <h3>Verifiable</h3>
-          <p>A built-in verify command checks remote objects against the manifest, re-verifying SHA-256 hashes on every file.</p>
+          <p>The verify command checks that backed-up objects exist. Restore checks SHA-256 hashes before publishing recovered files and rechecks existing files when you resume.</p>
         </div>
       </div>
     </div>
@@ -1149,7 +1174,7 @@
           <span class="section-label">Architecture</span>
           <h2 class="section-title">How it works</h2>
           <p class="section-prose">
-            Attic is a standalone macOS binary that runs a four-step pipeline. It reads your Photos library directly via PhotoKit, exports originals and edits to a staging area, then uploads everything to the storage bucket you configured.
+            Attic is a standalone macOS binary that runs a four-step backup pipeline. It reads your Photos library via PhotoKit, exports originals to a staging area, then copies them and their metadata to your selected drive or bucket.
           </p>
         </div>
       </div>
@@ -1173,14 +1198,14 @@
           <span class="pipeline-num">3</span>
           <div>
             <h3>Export</h3>
-            <p>Exports original and edited files via PhotoKit to a staging directory.</p>
+            <p>Exports original photo and video files to a staging directory.</p>
           </div>
         </div>
         <div class="pipeline-step">
           <span class="pipeline-num">4</span>
           <div>
-            <h3>Upload</h3>
-            <p>Uploads each original + metadata JSON to your storage bucket, then updates the manifest.</p>
+            <h3>Store</h3>
+            <p>Copies each original and its metadata JSON to your drive or bucket, then updates that destination's manifest.</p>
           </div>
         </div>
       </div>
@@ -1188,7 +1213,7 @@
       <div class="pipeline-detail reveal">
         <div class="pipeline-note">
           <h4>Credentials</h4>
-          <p>Storage access keys are stored in the macOS Keychain. Never in config files, never in environment variables. The config file only holds the endpoint, region, and bucket name.</p>
+          <p>S3 access keys are stored in the macOS Keychain. Local-drive destinations need no S3 account or credentials. Photos and Automation permissions still apply when exporting originals.</p>
         </div>
         <div class="pipeline-note">
           <h4>iCloud-only assets</h4>
@@ -1216,8 +1241,8 @@
           <p>Install with <code>brew install tijs/tap/attic</code>. A single binary, no other dependencies needed.</p>
         </div>
         <div class="req-item">
-          <h3>A storage bucket</h3>
-          <p>Any provider that supports the S3 protocol&hairsp;&mdash;&hairsp;that's most of them, not just Amazon. Create a bucket, generate API keys, and run <code>attic init</code> to configure.</p>
+          <h3>A drive or a bucket</h3>
+          <p>Use an existing directory on a local APFS/HFS+ drive, including an external disk, or an S3-compatible bucket with API credentials. Network shares and exFAT drives are not supported as local destinations.</p>
         </div>
       </div>
     </div>
@@ -1228,10 +1253,29 @@
     <div class="container">
       <div class="reveal">
         <span class="section-label">Storage</span>
-        <h2 class="section-title">Your storage, your region</h2>
+        <h2 class="section-title">Your drive or your cloud</h2>
         <p class="section-prose">
-          Attic works with any provider that speaks the S3 protocol&hairsp;&mdash;&hairsp;an industry standard supported far beyond Amazon. Want your photo backups in the EU? These providers keep your data on European soil.
+          Keep a backup on a drive you own, use an S3-compatible provider, or configure separate profiles for both. An existing S3 setup keeps working as before. Each run writes to one destination.
         </p>
+      </div>
+
+      <div class="mini-content setup-example reveal">
+        <div class="mini-text">
+          <h3>Back up to a local drive</h3>
+          <p class="section-prose">Mount your APFS or HFS+ drive first, then create an empty backup directory. Attic checks the destination identity and stops if the drive is missing; it never creates a replacement backup root on the internal disk.</p>
+          <p class="section-prose">Backup files are plaintext. Use an encrypted volume if you need encryption at rest. <a class="guide-link" href="https://github.com/tijs/attic/blob/main/docs/filesystem-backups.md">Local-drive setup guide &rarr;</a></p>
+        </div>
+        <pre class="mini-code"><code><span class="comment"># Mount PhotoBackup first</span>
+mkdir /Volumes/PhotoBackup/Attic
+<span class="cmd">attic init</span> --profile external &#92;
+  --filesystem /Volumes/PhotoBackup/Attic
+<span class="cmd">attic backup</span> --profile external
+<span class="cmd">attic verify</span> --profile external</code></pre>
+      </div>
+
+      <div class="setup-example reveal">
+        <h3>Prefer cloud storage?</h3>
+        <p class="section-prose">Run <code>attic init</code> to configure your S3 endpoint, bucket, and credentials. Want your backups in the EU? Several of these providers offer European regions.</p>
       </div>
 
       <div class="provider-list reveal">
@@ -1281,6 +1325,43 @@
     </div>
   </section>
 
+  <!-- RESTORE -->
+  <section id="restore" class="restore-section">
+    <div class="container">
+      <div class="reveal">
+        <span class="section-label">Recovery</span>
+        <h2 class="section-title">Get your originals back</h2>
+        <p class="section-prose">Restore files from an S3 or local-drive backup without the old Mac or Photos library. Attic verifies SHA-256 hashes before publishing files. Repeat the same command to resume: matching files are rechecked and skipped, while conflicting files are preserved.</p>
+      </div>
+      <div class="mini-content setup-example reveal">
+        <div class="mini-text">
+          <h3>Preview, then recover</h3>
+          <p class="section-prose">This example uses the local-drive profile above. For an existing default S3 setup, omit <code>--profile external</code>. On a fresh Mac, configure access to your existing backup first. Keep the recovery folder separate from the backup directory; neither directory may contain the other.</p>
+          <p class="section-prose">Use <code>--from</code> and <code>--through</code> for UTC date ranges, <code>--type photo</code> or <code>video</code>, and <code>--album</code> with an exact backed-up album UUID. Recovered files use hash-based names; available original names and metadata are kept in sidecars.</p>
+        </div>
+        <pre class="mini-code"><code>mkdir ~/RecoveredPhotos
+<span class="comment"># Preview the recovery</span>
+<span class="cmd">attic restore</span> --profile external &#92;
+  --destination ~/RecoveredPhotos &#92;
+  --dry-run
+
+<span class="comment"># Recover, or repeat to resume</span>
+<span class="cmd">attic restore</span> --profile external &#92;
+  --destination ~/RecoveredPhotos</code></pre>
+      </div>
+      <div class="pipeline-detail reveal">
+        <div class="pipeline-note">
+          <h4>Optional Photos import</h4>
+          <p>Add <code>--photos-library</code> with an existing <code>.photoslibrary</code> path and quit Photos first. This imports recovered files as assets; it does not recreate the original library IDs, albums, favorites, or editing history. Resources never backed up, such as a missing Live Photo motion component, cannot be recovered.</p>
+        </div>
+        <div class="pipeline-note">
+          <h4>Archived cloud objects</h4>
+          <p>Glacier and Deep Archive objects may need retrieval before recovery. Attic requests potentially chargeable retrieval only with explicit <code>--request-archive</code> authorization. <a class="guide-link" href="https://github.com/tijs/attic/blob/main/docs/restore.md">Read the restore guide &rarr;</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- WHAT IT DOES / DOESN'T -->
   <section class="not-section">
     <div class="container">
@@ -1295,23 +1376,23 @@
           <ul class="not-list">
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Back up original and edited photos and videos to your storage
+              Back up original photos and videos to a local drive or S3 bucket
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Preserve full metadata (EXIF, location, albums, dates)
+              Preserve available metadata in JSON sidecars
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Run incrementally&hairsp;&mdash;&hairsp;only upload what's new
+              Run incrementally&hairsp;&mdash;&hairsp;only copy what's new
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Verify backups with checksum validation
+              Recover originals with SHA-256 verification and resumable downloads
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
-              Store credentials in macOS Keychain
+              Optionally import recovered files into a selected Photos library
             </li>
             <li>
               <span class="marker marker-yes">&#10003;</span>
@@ -1344,7 +1425,7 @@
             </li>
             <li>
               <span class="marker marker-no">&times;</span>
-              Restore photos into your library
+              Reconstruct Photos library IDs, albums, or editing history
             </li>
             <li>
               <span class="marker marker-no">&times;</span>
@@ -1352,7 +1433,7 @@
             </li>
             <li>
               <span class="marker marker-no">&times;</span>
-              Manage your storage bucket for you
+              Recreate Live Photo motion or other resources that were never backed up
             </li>
           </ul>
         </div>
@@ -1367,14 +1448,14 @@
         <span class="section-label">Usage</span>
         <h2 class="section-title">Commands</h2>
         <p class="section-prose">
-          Everything runs through the <code>attic</code> command. Set up once, then it's just <code>attic backup</code> and occasionally <code>attic verify</code>.
+          Everything runs through the <code>attic</code> command. Set up a destination, run incremental backups, and use restore when you need your originals back. Add <code>--profile</code> to select a named destination.
         </p>
       </div>
 
       <div class="cmd-list reveal">
         <div class="cmd-item">
           <span class="cmd-name">init</span>
-          <span class="cmd-desc">Interactive setup. Configures your storage connection and stores credentials in Keychain.</span>
+          <span class="cmd-desc">Configure an S3 connection and store credentials in Keychain, or use --filesystem with an existing local directory. Add --profile for a separate destination.</span>
         </div>
         <div class="cmd-item">
           <span class="cmd-name">scan</span>
@@ -1386,11 +1467,15 @@
         </div>
         <div class="cmd-item">
           <span class="cmd-name">backup</span>
-          <span class="cmd-desc">Export pending assets and upload originals + metadata to your bucket. Supports --dry-run, --limit, and --type filters.</span>
+          <span class="cmd-desc">Export pending assets and copy originals + metadata to your selected drive or bucket. Supports --dry-run, --limit, and --type filters.</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-name">restore</span>
+          <span class="cmd-desc">Recover verified originals to --destination. Supports --dry-run, date/type/album filters, resume, and optional --photos-library import.</span>
         </div>
         <div class="cmd-item">
           <span class="cmd-name">verify</span>
-          <span class="cmd-desc">Check remote objects against the manifest and re-verify SHA-256 checksums.</span>
+          <span class="cmd-desc">Check that objects listed in the destination manifest exist. This is not a full-file checksum audit.</span>
         </div>
       </div>
     </div>
